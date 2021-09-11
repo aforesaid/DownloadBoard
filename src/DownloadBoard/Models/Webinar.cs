@@ -2,6 +2,8 @@
 {
     public class Webinar
     {
+        public Webinar()
+        { }
         public Webinar(string id, 
             string webName,
             string status, 

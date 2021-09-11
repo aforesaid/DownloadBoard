@@ -16,8 +16,7 @@ namespace DownloadBoard
             var items = MireaApiClient.Items;
             var orderedItems = items.OrderBy(x => x.DateStart);
             Console.WriteLine("Работа с http завершена, начинаю Excel");
-            var excelWorker = new ExcelClient();
-            excelWorker.Worker(orderedItems.ToArray());
+            ExcelHelper.SaveAll(orderedItems.ToArray(), "Вебинары");
         }
     }
 }
