@@ -1,13 +1,13 @@
 ﻿using System;
 using System.IO;
+using DownloadBoard.Models;
 using OfficeOpenXml;
-using OfficeOpenXml.Drawing.Chart;
 
-namespace DownloadBoard
+namespace DownloadBoard.Services
 {
-    public class ExcelWorker
+    public class ExcelClient
     {
-        public void Worker(DownloadItem[] items)
+        public void Worker(Webinar[] items)
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 

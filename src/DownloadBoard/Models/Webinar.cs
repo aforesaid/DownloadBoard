@@ -1,8 +1,13 @@
-﻿namespace DownloadBoard
+﻿namespace DownloadBoard.Models
 {
-    public class DownloadItem
+    public class Webinar
     {
-        public DownloadItem(string id, string webName, string status, string dateStart, string dateEnd, string link)
+        public Webinar(string id, 
+            string webName,
+            string status, 
+            string dateStart, 
+            string dateEnd,
+            string link)
         {
             Id = id;
             WebName = webName;

@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DownloadBoard.Models;
 using HtmlAgilityPack;
 
-namespace DownloadBoard
+namespace DownloadBoard.Services
 {
-    public class HttpWorker : IDisposable
+    public class MireaApiClient : IDisposable
     {
-        public static List<DownloadItem> Items { get; set; } = new List<DownloadItem>();
+        public static List<Webinar> Items { get; set; } = new();
         private static int countInWork = 0;
-        private readonly HttpClient _httpClient = new HttpClient();
+        private readonly HttpClient _httpClient = new();
         private int _countThread = 20;
-        public HttpWorker(string cookie)
+        public MireaApiClient(string cookie)
         {
             _httpClient.DefaultRequestHeaders.Add("Cookie",cookie);
         }
@@ -72,7 +72,7 @@ namespace DownloadBoard
                 
                     var nodeItems = node.InnerText.Split('\n').Skip(1).ToArray();
                     var linkValue = node.SelectNodes("//td[@class='cell c5 lastcol']").First().ChildNodes.First().Attributes["href"].Value;
-                    var downloadItem = new DownloadItem(
+                    var downloadItem = new Webinar(
                     nodeItems[0],
                     nodeItems[1],
                     nodeItems[2],
