@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using DownloadBoard.Models;
+﻿using System.Threading.Tasks;
 using DownloadBoard.Services;
 using Microsoft.Extensions.Configuration;
 
