@@ -4,60 +4,49 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 
 namespace DownloadBoard
 {
-    public class HttpWorker
+    public class HttpWorker : IDisposable
     {
         public static List<DownloadItem> Items { get; set; } = new List<DownloadItem>();
         private static int countInWork = 0;
+        private readonly HttpClient _httpClient = new HttpClient();
         private int _countThread = 20;
-        private string Cookie { get;  }
         public HttpWorker(string cookie)
         {
-            Cookie = cookie;
+            _httpClient.DefaultRequestHeaders.Add("Cookie",cookie);
         }
 
-        public void StartFind(int firstId, int lastId)
+        public async Task StartFind(int firstId, int lastId)
         {
-            var tasks = new List<Task>();
-            for (int i = 0; i < _countThread; i++)
-            {
-                var i1 = i;
-                var newTask = Task.Run(ParallelTaskWorker(i1, lastId, _countThread).Wait);
-                tasks.Add(newTask);
-            }
-            Task.WaitAll(tasks.ToArray());
-        }
-
-        private async Task ParallelTaskWorker(int startId, int lastId, int countThread)
-        {
-            for (int i = startId; i < lastId; i+= countThread)
-            {
-                try
+            using var semaphoreSlim = new SemaphoreSlim(10);
+            var tasks = Enumerable.Range(firstId, lastId)
+                .Select(async x =>
                 {
-
-                 await GetInfoByOnec(i);
-                 countInWork++;
-                 if (countInWork % 50 == 0)
-                 {
-                     Console.WriteLine(countInWork);
-                 }
-                 
-                }
-                catch (Exception e)
-                {
-                }
-            }
+                    try
+                    {
+                        await semaphoreSlim.WaitAsync();
+                        await GetInfoByOnec(x);
+                    }
+                    finally
+                    {
+                        semaphoreSlim.Release();
+                    }
+                });
+           
+            await Task.WhenAll(tasks);
         }
 
         private async Task GetInfoByOnec(int id)
         {
-            using var httpClient = new HttpClient();
+            try
+            {
+
             var url = "https://online-edu.mirea.ru/mod/webinars/studentTable.php";
-            httpClient.DefaultRequestHeaders.Add("Cookie",Cookie);
             var contentInDictionary = new Dictionary<string, string>
             {
                 ["idelement"] = id.ToString()
@@ -66,7 +55,7 @@ namespace DownloadBoard
             var content = new FormUrlEncodedContent(contentInDictionary);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
 
-            var result = await httpClient.PostAsync(new Uri(url), content);
+            var result = await _httpClient.PostAsync(new Uri(url), content);
             var resultInString = await result.Content.ReadAsStringAsync();
 
             var doc = new HtmlDocument();
@@ -91,15 +80,25 @@ namespace DownloadBoard
                     nodeItems[4],
                     linkValue);
                     Items.Add(downloadItem);
+                    if (Items.Count % 50 == 0)
+                        Console.WriteLine(Items.Count);
                 
                 }
                 catch (Exception e)
                 {
                 }
             }
+            
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
-        
-        
-        
+
+        public void Dispose()
+        {
+            _httpClient?.Dispose();
+        }
     }
 }

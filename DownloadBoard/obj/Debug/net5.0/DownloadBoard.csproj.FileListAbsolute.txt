@@ -5,7 +5,6 @@ C:\Users\fomen\RiderProjects\DownloadBoard\DownloadBoard\bin\Debug\net5.0\Downlo
 C:\Users\fomen\RiderProjects\DownloadBoard\DownloadBoard\bin\Debug\net5.0\DownloadBoard.dll
 C:\Users\fomen\RiderProjects\DownloadBoard\DownloadBoard\bin\Debug\net5.0\ref\DownloadBoard.dll
 C:\Users\fomen\RiderProjects\DownloadBoard\DownloadBoard\bin\Debug\net5.0\DownloadBoard.pdb
-C:\Users\fomen\RiderProjects\DownloadBoard\DownloadBoard\obj\Debug\net5.0\DownloadBoard.csprojAssemblyReference.cache
 C:\Users\fomen\RiderProjects\DownloadBoard\DownloadBoard\obj\Debug\net5.0\DownloadBoard.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\fomen\RiderProjects\DownloadBoard\DownloadBoard\obj\Debug\net5.0\DownloadBoard.AssemblyInfoInputs.cache
 C:\Users\fomen\RiderProjects\DownloadBoard\DownloadBoard\obj\Debug\net5.0\DownloadBoard.AssemblyInfo.cs
@@ -34,3 +33,4 @@ C:\Users\fomen\RiderProjects\DownloadBoard\DownloadBoard\bin\Debug\net5.0\runtim
 C:\Users\fomen\RiderProjects\DownloadBoard\DownloadBoard\bin\Debug\net5.0\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
 C:\Users\fomen\RiderProjects\DownloadBoard\DownloadBoard\bin\Debug\net5.0\runtimes\win\lib\netcoreapp3.0\System.Security.Cryptography.Pkcs.dll
 C:\Users\fomen\RiderProjects\DownloadBoard\DownloadBoard\obj\Debug\net5.0\DownloadBoard.csproj.CopyComplete
+C:\Users\fomen\RiderProjects\DownloadBoard\DownloadBoard\obj\Debug\net5.0\DownloadBoard.csproj.AssemblyReference.cache
