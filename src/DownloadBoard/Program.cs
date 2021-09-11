@@ -1,22 +1,28 @@
-﻿
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using DownloadBoard.Models;
 using DownloadBoard.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace DownloadBoard
 {
-    class Program
+    static class Program
     {
         static async Task Main()
         {
-            var cookie = "";
-            using var worker = new MireaApiClient(cookie);
-            await worker.StartFind(1, 100000);
-            var items = MireaApiClient.Items;
-            var orderedItems = items.OrderBy(x => x.DateStart);
-            Console.WriteLine("Работа с http завершена, начинаю Excel");
-            ExcelHelper.SaveAll(orderedItems.ToArray(), "Вебинары");
+            var configuration = GetConfiguration();
+
+            using var mireaApiClient = new MireaApiClient(configuration["Cookie"]);
+            var items = await mireaApiClient.GetWebinarsFromApi(sort: true);
+
+            const string fileName = "webinars";
+            ExcelHelper.SaveAll(items, fileName);
         }
-    }
+        
+        private static IConfigurationRoot GetConfiguration()
+            => new ConfigurationBuilder()
+                .AddJsonFile("config.json")
+                .Build();
+        }
 }

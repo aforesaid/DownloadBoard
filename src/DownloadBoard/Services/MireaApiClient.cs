@@ -12,7 +12,6 @@ namespace DownloadBoard.Services
 {
     public class MireaApiClient : IDisposable
     {
-        public static List<Webinar> Items { get; set; } = new();
         private static int countInWork = 0;
         private readonly HttpClient _httpClient = new();
         private int _countThread = 20;
@@ -20,17 +19,24 @@ namespace DownloadBoard.Services
         {
             _httpClient.DefaultRequestHeaders.Add("Cookie",cookie);
         }
-
-        public async Task StartFind(int firstId, int lastId)
+        public async Task<Webinar[]> GetWebinarsFromApi(bool sort)
         {
+                        
             using var semaphoreSlim = new SemaphoreSlim(10);
-            var tasks = Enumerable.Range(firstId, lastId)
+
+            const int startIndex = 1;
+            const int lastIndex = 100000;
+
+            var result = new List<Webinar>();
+            
+            var tasks = Enumerable.Range(startIndex, lastIndex)
                 .Select(async x =>
                 {
                     try
                     {
                         await semaphoreSlim.WaitAsync();
-                        await GetInfoByOnec(x);
+                        var newItems = await GetInfoByOnec(x);
+                        result.AddRange(newItems);
                     }
                     finally
                     {
@@ -39,60 +45,60 @@ namespace DownloadBoard.Services
                 });
            
             await Task.WhenAll(tasks);
+            
+           
+            if (sort)
+            {
+                result = result.OrderBy(x => x.DateStart)
+                    .ToList();
+            }
+            
+            return result.ToArray();
         }
 
-        private async Task GetInfoByOnec(int id)
+        private async Task<Webinar[]> GetInfoByOnec(int id)
         {
             try
             {
-
-            var url = "https://online-edu.mirea.ru/mod/webinars/studentTable.php";
-            var contentInDictionary = new Dictionary<string, string>
-            {
-                ["idelement"] = id.ToString()
-            };
-
-            var content = new FormUrlEncodedContent(contentInDictionary);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-
-            var result = await _httpClient.PostAsync(new Uri(url), content);
-            var resultInString = await result.Content.ReadAsStringAsync();
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(resultInString);
-            var nodes = doc.DocumentNode.SelectNodes("//tr[@class='']");
-            if (nodes == null)
-                return;
-            foreach (var node in nodes)
-            {
-                try
+                var url = "https://online-edu.mirea.ru/mod/webinars/studentTable.php";
+                var contentInDictionary = new Dictionary<string, string>
                 {
-                    if (node.InnerText.Length < 50)
-                        continue;
+                    ["idelement"] = id.ToString()
+                };
+
+                var content = new FormUrlEncodedContent(contentInDictionary);
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+
+                var response = await _httpClient.PostAsync(new Uri(url), content);
+                var resultInString = await response.Content.ReadAsStringAsync();
+
+                var doc = new HtmlDocument();
+                doc.LoadHtml(resultInString);
                 
-                    var nodeItems = node.InnerText.Split('\n').Skip(1).ToArray();
-                    var linkValue = node.SelectNodes("//td[@class='cell c5 lastcol']").First().ChildNodes.First().Attributes["href"].Value;
-                    var downloadItem = new Webinar(
-                    nodeItems[0],
-                    nodeItems[1],
-                    nodeItems[2],
-                    nodeItems[3],
-                    nodeItems[4],
-                    linkValue);
-                    Items.Add(downloadItem);
-                    if (Items.Count % 50 == 0)
-                        Console.WriteLine(Items.Count);
+                var nodes = doc.DocumentNode.SelectNodes("//tr[@class='']");
                 
-                }
-                catch (Exception e)
-                {
-                }
-            }
-            
+                return nodes == null ? Array.Empty<Webinar>() : 
+                    (
+                        from node in nodes.Where(x => x.InnerText.Length >= 50) 
+                        let nodeItems = node.InnerText.Split('\n')
+                            .Skip(1)
+                            .ToArray()
+                        let linkValue = node.SelectNodes("//td[@class='cell c5 lastcol']")
+                            .First().ChildNodes
+                            .First().Attributes["href"].Value
+                        select new Webinar(nodeItems[0], 
+                            nodeItems[1], 
+                            nodeItems[2],
+                            nodeItems[3], 
+                            nodeItems[4],
+                            linkValue)
+                        )
+                    .ToArray();
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                throw;
             }
         }
 
